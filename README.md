@@ -2,7 +2,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>相機APP - iOS 18+</title>
+    <title>專業相機 - iOS 18+</title>
     <style>
         * {
             margin: 0;
@@ -11,10 +11,18 @@
             -webkit-tap-highlight-color: transparent;
         }
         
+        :root {
+            --primary-color: #007AFF;
+            --bg-color: #000;
+            --control-bg: #1a1a1a;
+            --text-color: #fff;
+            --secondary-text: #aaa;
+        }
+        
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background-color: #000;
-            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
             overflow: hidden;
             height: 100vh;
             position: relative;
@@ -29,50 +37,54 @@
             height: 100vh;
             padding: 20px;
             text-align: center;
-            background-color: #000;
+            background-color: var(--bg-color);
         }
         
         #device-check h2 {
             margin-bottom: 20px;
             color: #ff3b30;
+            font-size: 24px;
+            font-weight: 600;
         }
         
         #device-check p {
             margin-bottom: 10px;
-            color: #ccc;
+            color: var(--secondary-text);
+            font-size: 16px;
+            line-height: 1.5;
         }
         
         #camera-app {
             display: none;
             height: 100vh;
             flex-direction: column;
-            background-color: #000;
+            background-color: var(--bg-color);
         }
         
         /* 預覽區域 */
         #preview-container {
-            flex: 1;
             position: relative;
+            width: 100%;
+            height: 75vh;
             overflow: hidden;
             background-color: #111;
-            border-radius: 10px;
-            margin: 10px;
         }
         
         #video-preview {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            border-radius: 10px;
+            transform: scaleX(1); /* 防止前鏡頭鏡像 */
         }
         
         /* 控制區域 */
         #controls {
-            padding: 20px;
+            padding: 20px 15px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            background-color: #000;
+            background-color: var(--bg-color);
+            flex: 1;
         }
         
         /* 模式切換 */
@@ -81,21 +93,22 @@
             background-color: #222;
             border-radius: 20px;
             padding: 4px;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
         
         .mode-btn {
             padding: 8px 20px;
             border-radius: 16px;
             background: transparent;
-            color: #fff;
+            color: var(--text-color);
             border: none;
             font-size: 16px;
+            font-weight: 500;
             transition: all 0.3s ease;
         }
         
         .mode-btn.active {
-            background-color: #007AFF;
+            background-color: var(--primary-color);
             color: #000;
         }
         
@@ -104,50 +117,54 @@
             display: flex;
             justify-content: center;
             margin-bottom: 15px;
-            gap: 10px;
+            gap: 8px;
         }
         
         .lens-btn {
             padding: 6px 12px;
             border-radius: 12px;
             background-color: #333;
-            color: #fff;
+            color: var(--text-color);
             border: none;
             font-size: 14px;
+            font-weight: 500;
             transition: all 0.3s ease;
         }
         
         .lens-btn.active {
-            background-color: #007AFF;
+            background-color: var(--primary-color);
             color: #000;
         }
         
         /* 錄影參數控制 */
-        #video-controls {
+        #video-controls-panel {
             display: none;
             flex-direction: column;
-            width: 100%;
+            width: 90%;
             margin-bottom: 15px;
-            padding: 10px;
-            background-color: #1a1a1a;
-            border-radius: 10px;
+            padding: 15px;
+            background-color: var(--control-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
         }
         
         .control-group {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
         }
         
         .control-label {
             font-size: 14px;
-            color: #ccc;
+            color: var(--secondary-text);
+            font-weight: 500;
         }
         
         .control-value {
             font-size: 14px;
-            color: #007AFF;
+            color: var(--primary-color);
+            font-weight: 600;
         }
         
         .control-slider {
@@ -157,6 +174,7 @@
             background: #333;
             border-radius: 2px;
             outline: none;
+            margin-bottom: 15px;
         }
         
         .control-slider::-webkit-slider-thumb {
@@ -164,7 +182,7 @@
             width: 20px;
             height: 20px;
             border-radius: 50%;
-            background: #007AFF;
+            background: var(--primary-color);
             cursor: pointer;
         }
         
@@ -175,20 +193,21 @@
             align-items: center;
             width: 100%;
             max-width: 400px;
+            margin-top: 10px;
         }
         
         /* 查看照片按鈕 */
         #gallery-btn {
             width: 50px;
             height: 50px;
-            border-radius: 10px;
+            border-radius: 12px;
             background-color: #333;
             border: none;
             display: flex;
             justify-content: center;
             align-items: center;
-            color: #fff;
-            font-size: 20px;
+            color: var(--text-color);
+            font-size: 22px;
         }
         
         /* 拍攝按鈕 */
@@ -196,7 +215,7 @@
             width: 70px;
             height: 70px;
             border-radius: 50%;
-            background-color: #007AFF;
+            background-color: var(--primary-color);
             border: 4px solid rgba(255, 255, 255, 0.2);
             cursor: pointer;
             transition: all 0.2s ease;
@@ -207,18 +226,30 @@
             background-color: #0056CC;
         }
         
+        /* 錄影設定按鈕 */
+        #video-settings-btn {
+            display: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            background-color: #333;
+            border: none;
+            color: var(--text-color);
+            font-size: 22px;
+        }
+        
         /* 切換鏡頭按鈕 */
         #flip-camera-btn {
             width: 50px;
             height: 50px;
-            border-radius: 10px;
+            border-radius: 12px;
             background-color: #333;
             border: none;
             display: flex;
             justify-content: center;
             align-items: center;
-            color: #fff;
-            font-size: 20px;
+            color: var(--text-color);
+            font-size: 22px;
         }
         
         /* 錄影指示器 */
@@ -246,13 +277,15 @@
         #recording-timer {
             font-size: 14px;
             color: #ff3b30;
+            font-weight: 600;
         }
         
         /* 解析度顯示 */
         #resolution-info {
-            font-size: 12px;
-            color: #888;
-            margin-top: 5px;
+            font-size: 13px;
+            color: var(--secondary-text);
+            margin-top: 8px;
+            font-weight: 500;
         }
         
         /* 儲存確認對話框 */
@@ -281,12 +314,14 @@
         #save-dialog h3 {
             margin-bottom: 15px;
             font-size: 18px;
+            font-weight: 600;
         }
         
         #save-dialog p {
             margin-bottom: 20px;
-            color: #aaa;
+            color: var(--secondary-text);
             font-size: 14px;
+            line-height: 1.4;
         }
         
         #save-dialog-buttons {
@@ -306,12 +341,12 @@
         
         #save-cancel {
             background-color: #333;
-            color: #fff;
+            color: var(--text-color);
             margin-right: 10px;
         }
         
         #save-confirm {
-            background-color: #007AFF;
+            background-color: var(--primary-color);
             color: #fff;
             margin-left: 10px;
         }
@@ -323,12 +358,13 @@
             left: 50%;
             transform: translateX(-50%);
             background-color: rgba(0, 0, 0, 0.7);
-            color: #fff;
+            color: var(--text-color);
             padding: 10px 20px;
             border-radius: 20px;
             font-size: 14px;
             display: none;
             z-index: 999;
+            font-weight: 500;
         }
         
         /* 相簿預覽 */
@@ -355,8 +391,14 @@
         #gallery-close {
             background: none;
             border: none;
-            color: #007AFF;
+            color: var(--primary-color);
             font-size: 16px;
+            font-weight: 600;
+        }
+        
+        #gallery-title {
+            font-size: 18px;
+            font-weight: 600;
         }
         
         #gallery-content {
@@ -371,6 +413,26 @@
             max-width: 100%;
             max-height: 100%;
             border-radius: 10px;
+        }
+        
+        /* 設定面板標題 */
+        .panel-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            text-align: center;
+            color: var(--text-color);
+        }
+        
+        /* 關閉設定面板按鈕 */
+        #close-settings {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            color: var(--secondary-text);
+            font-size: 18px;
         }
     </style>
 </head>
@@ -403,7 +465,10 @@
             </div>
             
             <!-- 錄影參數控制 -->
-            <div id="video-controls">
+            <div id="video-controls-panel">
+                <button id="close-settings">✕</button>
+                <div class="panel-title">錄影設定</div>
+                
                 <div class="control-group">
                     <span class="control-label">解析度</span>
                     <span class="control-value" id="resolution-value">4K</span>
@@ -418,7 +483,7 @@
                 
                 <div class="control-group">
                     <span class="control-label">比特率</span>
-                    <span class="control-value" id="bitrate-value">高</span>
+                    <span class="control-value" id="bitrate-value">中</span>
                 </div>
                 <input type="range" min="0" max="2" value="1" class="control-slider" id="bitrate-slider">
             </div>
@@ -437,12 +502,18 @@
                 <!-- 拍攝按鈕 -->
                 <button id="capture-btn"></button>
                 
-                <!-- 切換鏡頭按鈕 -->
-                <button id="flip-camera-btn">🔄</button>
+                <!-- 右側按鈕容器 -->
+                <div style="display: flex; gap: 10px;">
+                    <!-- 錄影設定按鈕 -->
+                    <button id="video-settings-btn">⚙️</button>
+                    
+                    <!-- 切換鏡頭按鈕 -->
+                    <button id="flip-camera-btn">🔄</button>
+                </div>
             </div>
             
             <!-- 解析度資訊 -->
-            <div id="resolution-info">4K 60fps</div>
+            <div id="resolution-info">4K • 60fps</div>
         </div>
     </div>
     
@@ -462,7 +533,7 @@
     <div id="gallery-preview">
         <div id="gallery-header">
             <button id="gallery-close">關閉</button>
-            <h3>相簿</h3>
+            <h3 id="gallery-title">相簿</h3>
             <div></div> <!-- 佔位元素 -->
         </div>
         <div id="gallery-content">
@@ -559,12 +630,26 @@
                 const devices = await navigator.mediaDevices.enumerateDevices();
                 const videoDevices = devices.filter(device => device.kind === 'videoinput');
                 
-                // 模擬不同鏡頭類型 (實際應用中需要更精確的檢測)
-                availableLenses = [
-                    { id: 'ultrawide', label: '0.5x', facing: 'environment' },
-                    { id: 'wide', label: '1x', facing: 'environment' },
-                    { id: 'telephoto', label: '2x', facing: 'environment' }
-                ];
+                // 根據設備類型模擬不同鏡頭
+                // 實際應用中需要更精確的檢測
+                availableLenses = [];
+                
+                // 模擬iPhone多鏡頭系統
+                if (videoDevices.length > 0) {
+                    // 超廣角鏡頭 (如果可用)
+                    availableLenses.push({ id: 'ultrawide', label: '0.5x', facing: 'environment' });
+                    
+                    // 廣角鏡頭 (主鏡頭)
+                    availableLenses.push({ id: 'wide', label: '1x', facing: 'environment' });
+                    
+                    // 望遠鏡頭 (如果可用)
+                    availableLenses.push({ id: 'telephoto', label: '2x', facing: 'environment' });
+                    
+                    // 如果有更多鏡頭，添加更多選項
+                    if (videoDevices.length >= 3) {
+                        availableLenses.push({ id: 'telephoto2', label: '3x', facing: 'environment' });
+                    }
+                }
                 
                 // 生成鏡頭選擇按鈕
                 const lensSelector = document.getElementById('lens-selector');
@@ -596,7 +681,13 @@
             // 重新啟動相機以應用新的鏡頭設置
             await restartCamera();
             
-            showStatusMessage(`已切換到${lensId === 'ultrawide' ? '超廣角' : lensId === 'wide' ? '廣角' : '望遠'}鏡頭`);
+            // 根據鏡頭ID顯示對應的倍率名稱
+            let lensName = '廣角';
+            if (lensId === 'ultrawide') lensName = '超廣角';
+            else if (lensId === 'telephoto') lensName = '望遠';
+            else if (lensId === 'telephoto2') lensName = '超望遠';
+            
+            showStatusMessage(`已切換到${lensName}鏡頭`);
         }
         
         // 切換前後鏡頭
@@ -613,13 +704,30 @@
             }
             
             try {
+                // 根據鏡頭類型設置不同的約束條件
+                let width = 3840, height = 2160; // 4K 默認
+                
+                // 根據鏡頭類型調整分辨率
+                if (currentLens === 'ultrawide') {
+                    width = 1920;
+                    height = 1080;
+                } else if (currentLens === 'telephoto') {
+                    width = 3840;
+                    height = 2160;
+                } else if (currentLens === 'telephoto2') {
+                    width = 4032;
+                    height = 3024;
+                }
+                
                 // 設置約束條件
                 const constraints = {
                     video: {
                         facingMode: currentCamera,
-                        width: { ideal: 3840 },
-                        height: { ideal: 2160 },
-                        frameRate: { ideal: 60 }
+                        width: { ideal: width },
+                        height: { ideal: height },
+                        frameRate: { ideal: 60 },
+                        // 添加更多約束以優化性能
+                        aspectRatio: { ideal: width/height }
                     },
                     audio: false // 禁用麥克風，避免雜音
                 };
@@ -630,6 +738,20 @@
                 // 設置視頻預覽
                 const videoPreview = document.getElementById('video-preview');
                 videoPreview.srcObject = stream;
+                
+                // 防止前鏡頭鏡像
+                if (currentCamera === 'user') {
+                    videoPreview.style.transform = 'scaleX(1)';
+                } else {
+                    videoPreview.style.transform = 'scaleX(1)';
+                }
+                
+                // 等待視頻準備好
+                await new Promise(resolve => {
+                    videoPreview.onloadedmetadata = () => {
+                        resolve();
+                    };
+                });
                 
             } catch (error) {
                 console.error('重新啟動相機失敗:', error);
@@ -670,7 +792,7 @@
             
             // 更新解析度資訊
             document.getElementById('resolution-info').textContent = 
-                `${['1080p', '2.7K', '4K'][videoSettings.resolution]} ${['24', '30', '60'][videoSettings.fps]}fps`;
+                `${['1080p', '2.7K', '4K'][videoSettings.resolution]} • ${['24', '30', '60'][videoSettings.fps]}fps`;
         }
         
         // 設置事件監聽器
@@ -690,6 +812,12 @@
             // 查看照片按鈕
             document.getElementById('gallery-btn').addEventListener('click', showGallery);
             
+            // 錄影設定按鈕
+            document.getElementById('video-settings-btn').addEventListener('click', toggleVideoSettings);
+            
+            // 關閉設定面板按鈕
+            document.getElementById('close-settings').addEventListener('click', toggleVideoSettings);
+            
             // 儲存對話框按鈕
             document.getElementById('save-cancel').addEventListener('click', closeSaveDialog);
             document.getElementById('save-confirm').addEventListener('click', confirmSave);
@@ -706,8 +834,11 @@
             document.getElementById('photo-mode').classList.toggle('active', mode === 'photo');
             document.getElementById('video-mode').classList.toggle('active', mode === 'video');
             
-            // 顯示/隱藏錄影控制
-            document.getElementById('video-controls').style.display = mode === 'video' ? 'flex' : 'none';
+            // 顯示/隱藏錄影設定按鈕
+            document.getElementById('video-settings-btn').style.display = mode === 'video' ? 'block' : 'none';
+            
+            // 隱藏設定面板
+            document.getElementById('video-controls-panel').style.display = 'none';
             
             // 更新解析度顯示
             updateVideoSettings();
@@ -718,6 +849,12 @@
             }
             
             showStatusMessage(`已切換到${mode === 'photo' ? '拍照' : '錄影'}模式`);
+        }
+        
+        // 切換錄影設定面板
+        function toggleVideoSettings() {
+            const panel = document.getElementById('video-controls-panel');
+            panel.style.display = panel.style.display === 'flex' ? 'none' : 'flex';
         }
         
         // 處理拍攝
@@ -743,11 +880,17 @@
             canvas.width = videoPreview.videoWidth;
             canvas.height = videoPreview.videoHeight;
             
+            // 防止前鏡頭鏡像
+            if (currentCamera === 'user') {
+                context.translate(canvas.width, 0);
+                context.scale(-1, 1);
+            }
+            
             // 繪製當前視頻幀到canvas
             context.drawImage(videoPreview, 0, 0, canvas.width, canvas.height);
             
             // 將canvas轉換為圖片數據URL
-            const imageDataURL = canvas.toDataURL('image/jpeg');
+            const imageDataURL = canvas.toDataURL('image/jpeg', 0.95); // 提高圖片質量
             
             // 顯示儲存對話框
             showSaveDialog(imageDataURL, 'photo');
@@ -787,7 +930,7 @@
                 };
                 
                 // 開始錄影
-                mediaRecorder.start(1000); // 每1秒收集一次數據
+                mediaRecorder.start(100); // 減少數據收集間隔以提高流暢度
                 isRecording = true;
                 
                 // 顯示錄影指示器
