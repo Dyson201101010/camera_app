@@ -1,1049 +1,506 @@
-<html lang="zh-Hant">
+<html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>專業相機 - iOS 18+</title>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#000000">
+    <title>EPhoto Pro</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- React & ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel for JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Space+Mono:wght@400;700&display=swap');
+
+        /* Custom Scrollbar hide */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
         }
-        
-        :root {
-            --primary-color: #007AFF;
-            --bg-color: #000;
-            --control-bg: #1a1a1a;
-            --text-color: #fff;
-            --secondary-text: #aaa;
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
         }
-        
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            overflow: hidden;
-            height: 100vh;
-            position: relative;
-            padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+            background-color: #000;
+            color: white;
+            font-family: 'Inter', sans-serif;
+            overflow: hidden; /* Prevent scrolling */
+            touch-action: none; /* Prevent bounce */
         }
-        
-        #device-check {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            padding: 20px;
-            text-align: center;
-            background-color: var(--bg-color);
+
+        /* iOS 26 Liquid Glass Effect */
+        .liquid-glass {
+            background: rgba(20, 20, 20, 0.4);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
         }
-        
-        #device-check h2 {
-            margin-bottom: 20px;
-            color: #ff3b30;
-            font-size: 24px;
-            font-weight: 600;
+
+        .liquid-glass-accent {
+            background: rgba(34, 211, 238, 0.1); /* Cyan hint */
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(34, 211, 238, 0.3);
         }
-        
-        #device-check p {
-            margin-bottom: 10px;
-            color: var(--secondary-text);
-            font-size: 16px;
-            line-height: 1.5;
+
+        /* Apple Log Simulation Filter */
+        .filter-apple-log {
+            filter: contrast(0.85) saturate(0.7) brightness(1.1) sepia(0.1);
         }
-        
-        #camera-app {
-            display: none;
-            height: 100vh;
-            flex-direction: column;
-            background-color: var(--bg-color);
-        }
-        
-        /* 預覽區域 */
-        #preview-container {
-            position: relative;
-            width: 100%;
-            height: 75vh;
-            overflow: hidden;
-            background-color: #111;
-        }
-        
-        #video-preview {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transform: scaleX(1); /* 防止前鏡頭鏡像 */
-        }
-        
-        /* 控制區域 */
-        #controls {
-            padding: 20px 15px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            background-color: var(--bg-color);
-            flex: 1;
-        }
-        
-        /* 模式切換 */
-        #mode-switch {
-            display: flex;
-            background-color: #222;
-            border-radius: 20px;
-            padding: 4px;
-            margin-bottom: 15px;
-        }
-        
-        .mode-btn {
-            padding: 8px 20px;
-            border-radius: 16px;
+
+        /* Range Slider Styling */
+        input[type=range] {
+            -webkit-appearance: none;
             background: transparent;
-            color: var(--text-color);
-            border: none;
-            font-size: 16px;
-            font-weight: 500;
-            transition: all 0.3s ease;
         }
-        
-        .mode-btn.active {
-            background-color: var(--primary-color);
-            color: #000;
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 20px;
+            width: 20px;
+            border-radius: 50%;
+            background: #22d3ee; /* Cyan-400 */
+            cursor: pointer;
+            margin-top: -8px;
+            box-shadow: 0 0 10px rgba(34, 211, 238, 0.5);
         }
-        
-        /* 鏡頭選擇 */
-        #lens-selector {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 15px;
-            gap: 8px;
-        }
-        
-        .lens-btn {
-            padding: 6px 12px;
-            border-radius: 12px;
-            background-color: #333;
-            color: var(--text-color);
-            border: none;
-            font-size: 14px;
-            font-weight: 500;
-            transition: all 0.3s ease;
-        }
-        
-        .lens-btn.active {
-            background-color: var(--primary-color);
-            color: #000;
-        }
-        
-        /* 錄影參數控制 */
-        #video-controls-panel {
-            display: none;
-            flex-direction: column;
-            width: 90%;
-            margin-bottom: 15px;
-            padding: 15px;
-            background-color: var(--control-bg);
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-        }
-        
-        .control-group {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 12px;
-        }
-        
-        .control-label {
-            font-size: 14px;
-            color: var(--secondary-text);
-            font-weight: 500;
-        }
-        
-        .control-value {
-            font-size: 14px;
-            color: var(--primary-color);
-            font-weight: 600;
-        }
-        
-        .control-slider {
+        input[type=range]::-webkit-slider-runnable-track {
             width: 100%;
             height: 4px;
-            -webkit-appearance: none;
-            background: #333;
+            cursor: pointer;
+            background: rgba(255,255,255,0.2);
             border-radius: 2px;
-            outline: none;
-            margin-bottom: 15px;
         }
         
-        .control-slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            background: var(--primary-color);
-            cursor: pointer;
+        /* Shutter Animation */
+        @keyframes flash {
+            0% { opacity: 0; }
+            10% { opacity: 1; }
+            100% { opacity: 0; }
         }
-        
-        /* 底部控制欄 */
-        #bottom-controls {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            width: 100%;
-            max-width: 400px;
-            margin-top: 10px;
-        }
-        
-        /* 查看照片按鈕 */
-        #gallery-btn {
-            width: 50px;
-            height: 50px;
-            border-radius: 12px;
-            background-color: #333;
-            border: none;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            color: var(--text-color);
-            font-size: 22px;
-        }
-        
-        /* 拍攝按鈕 */
-        #capture-btn {
-            width: 70px;
-            height: 70px;
-            border-radius: 50%;
-            background-color: var(--primary-color);
-            border: 4px solid rgba(255, 255, 255, 0.2);
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        
-        #capture-btn:active {
-            transform: scale(0.95);
-            background-color: #0056CC;
-        }
-        
-        /* 錄影設定按鈕 */
-        #video-settings-btn {
-            display: none;
-            width: 50px;
-            height: 50px;
-            border-radius: 12px;
-            background-color: #333;
-            border: none;
-            color: var(--text-color);
-            font-size: 22px;
-        }
-        
-        /* 切換鏡頭按鈕 */
-        #flip-camera-btn {
-            width: 50px;
-            height: 50px;
-            border-radius: 12px;
-            background-color: #333;
-            border: none;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            color: var(--text-color);
-            font-size: 22px;
-        }
-        
-        /* 錄影指示器 */
-        #recording-indicator {
-            display: none;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-        
-        #recording-dot {
-            width: 12px;
-            height: 12px;
-            background-color: #ff3b30;
-            border-radius: 50%;
-            margin-right: 8px;
-            animation: pulse 1.5s infinite;
-        }
-        
-        @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.3; }
-            100% { opacity: 1; }
-        }
-        
-        #recording-timer {
-            font-size: 14px;
-            color: #ff3b30;
-            font-weight: 600;
-        }
-        
-        /* 解析度顯示 */
-        #resolution-info {
-            font-size: 13px;
-            color: var(--secondary-text);
-            margin-top: 8px;
-            font-weight: 500;
-        }
-        
-        /* 儲存確認對話框 */
-        #save-dialog {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.8);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-        }
-        
-        #save-dialog-content {
-            background-color: #1c1c1e;
-            border-radius: 14px;
-            padding: 20px;
-            width: 80%;
-            max-width: 300px;
-            text-align: center;
-        }
-        
-        #save-dialog h3 {
-            margin-bottom: 15px;
-            font-size: 18px;
-            font-weight: 600;
-        }
-        
-        #save-dialog p {
-            margin-bottom: 20px;
-            color: var(--secondary-text);
-            font-size: 14px;
-            line-height: 1.4;
-        }
-        
-        #save-dialog-buttons {
-            display: flex;
-            justify-content: space-between;
-        }
-        
-        .dialog-btn {
-            flex: 1;
-            padding: 12px;
-            border-radius: 10px;
-            border: none;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-        }
-        
-        #save-cancel {
-            background-color: #333;
-            color: var(--text-color);
-            margin-right: 10px;
-        }
-        
-        #save-confirm {
-            background-color: var(--primary-color);
-            color: #fff;
-            margin-left: 10px;
-        }
-        
-        /* 狀態訊息 */
-        #status-message {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background-color: rgba(0, 0, 0, 0.7);
-            color: var(--text-color);
-            padding: 10px 20px;
-            border-radius: 20px;
-            font-size: 14px;
-            display: none;
-            z-index: 999;
-            font-weight: 500;
-        }
-        
-        /* 相簿預覽 */
-        #gallery-preview {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: #000;
-            z-index: 1001;
-            flex-direction: column;
-        }
-        
-        #gallery-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px;
-            background-color: rgba(0, 0, 0, 0.7);
-        }
-        
-        #gallery-close {
-            background: none;
-            border: none;
-            color: var(--primary-color);
-            font-size: 16px;
-            font-weight: 600;
-        }
-        
-        #gallery-title {
-            font-size: 18px;
-            font-weight: 600;
-        }
-        
-        #gallery-content {
-            flex: 1;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-        
-        #gallery-image {
-            max-width: 100%;
-            max-height: 100%;
-            border-radius: 10px;
-        }
-        
-        /* 設定面板標題 */
-        .panel-title {
-            font-size: 16px;
-            font-weight: 600;
-            margin-bottom: 15px;
-            text-align: center;
-            color: var(--text-color);
-        }
-        
-        /* 關閉設定面板按鈕 */
-        #close-settings {
+        .shutter-flash {
+            animation: flash 0.2s ease-out;
+            background-color: black;
             position: absolute;
-            top: 10px;
-            right: 10px;
-            background: none;
-            border: none;
-            color: var(--secondary-text);
-            font-size: 18px;
+            top: 0; left: 0; right: 0; bottom: 0;
+            pointer-events: none;
+            z-index: 50;
+        }
+
+        /* Orientation Indicator */
+        .level-indicator {
+            transition: transform 0.2s ease;
         }
     </style>
 </head>
 <body>
-    <!-- 設備檢測頁面 -->
-    <div id="device-check">
-        <h2>設備不兼容</h2>
-        <p>此應用程式僅支援iOS 18及以上版本的iPhone設備</p>
-        <p>請使用相容設備開啟此應用程式</p>
-    </div>
-    
-    <!-- 相機應用主界面 -->
-    <div id="camera-app">
-        <!-- 預覽區域 -->
-        <div id="preview-container">
-            <video id="video-preview" autoplay playsinline muted></video>
-        </div>
-        
-        <!-- 控制區域 -->
-        <div id="controls">
-            <!-- 模式切換 -->
-            <div id="mode-switch">
-                <button id="photo-mode" class="mode-btn active">拍照</button>
-                <button id="video-mode" class="mode-btn">錄影</button>
-            </div>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef, useMemo } = React;
+
+        // --- Inline Icons to avoid CDN errors ---
+        const IconBase = ({ children, size = 24, className = "", ...props }) => (
+            <svg 
+                xmlns="http://www.w3.org/2000/svg" 
+                width={size} 
+                height={size} 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="2" 
+                strokeLinecap="round" 
+                strokeLinejoin="round" 
+                className={className} 
+                {...props}
+            >
+                {children}
+            </svg>
+        );
+
+        const Zap = (props) => <IconBase {...props}><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></IconBase>;
+        const Sliders = (props) => <IconBase {...props}><line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line></IconBase>;
+        const RotateCcw = (props) => <IconBase {...props}><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 12" /><path d="M3 3v9h9" /></IconBase>;
+        const Sun = (props) => <IconBase {...props}><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="M4.93 4.93l1.41 1.41"></path><path d="M17.66 17.66l1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="M6.34 17.66l-1.41-1.41"></path><path d="M19.07 4.93l-1.41 1.41"></path></IconBase>;
+        const Grid = (props) => <IconBase {...props}><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="3" y1="15" x2="21" y2="15"></line><line x1="9" y1="3" x2="9" y2="21"></line><line x1="15" y1="3" x2="15" y2="21"></line></IconBase>;
+        const ImageIcon = (props) => <IconBase {...props}><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></IconBase>;
+        const Aperture = (props) => <IconBase {...props}><circle cx="12" cy="12" r="10"></circle><line x1="14.31" y1="8" x2="20.05" y2="17.94"></line><line x1="9.69" y1="8" x2="21.17" y2="8"></line><line x1="7.38" y1="12" x2="13.12" y2="2.06"></line><line x1="9.69" y1="16" x2="3.95" y2="6.06"></line><line x1="14.31" y1="16" x2="2.83" y2="16"></line><line x1="16.62" y1="12" x2="10.88" y2="21.94"></line></IconBase>;
+
+        const App = () => {
+            // --- State Management ---
+            const videoRef = useRef(null);
+            const [stream, setStream] = useState(null);
+            const [hasPermission, setHasPermission] = useState(false);
+            const [deviceInfo, setDeviceInfo] = useState({ model: 'Unknown', isPro: false, isMax: false });
             
-            <!-- 鏡頭選擇 -->
-            <div id="lens-selector">
-                <!-- 鏡頭按鈕將由JavaScript動態生成 -->
-            </div>
+            // Camera Features
+            const [cameraMode, setCameraMode] = useState('PHOTO'); // PHOTO, VIDEO
+            const [format, setFormat] = useState('HEIF'); // HEIF, RAW, LOG
+            const [zoom, setZoom] = useState(1);
+            const [lens, setLens] = useState('1x'); // 0.5x, 1x, 2x, 5x
+            const [gridVisible, setGridVisible] = useState(true);
+            const [flashMode, setFlashMode] = useState('off');
             
-            <!-- 錄影參數控制 -->
-            <div id="video-controls-panel">
-                <button id="close-settings">✕</button>
-                <div class="panel-title">錄影設定</div>
-                
-                <div class="control-group">
-                    <span class="control-label">解析度</span>
-                    <span class="control-value" id="resolution-value">4K</span>
-                </div>
-                <input type="range" min="0" max="2" value="2" class="control-slider" id="resolution-slider">
-                
-                <div class="control-group">
-                    <span class="control-label">幀率</span>
-                    <span class="control-value" id="fps-value">60 fps</span>
-                </div>
-                <input type="range" min="0" max="2" value="2" class="control-slider" id="fps-slider">
-                
-                <div class="control-group">
-                    <span class="control-label">比特率</span>
-                    <span class="control-value" id="bitrate-value">中</span>
-                </div>
-                <input type="range" min="0" max="2" value="1" class="control-slider" id="bitrate-slider">
-            </div>
-            
-            <!-- 錄影指示器 -->
-            <div id="recording-indicator">
-                <div id="recording-dot"></div>
-                <div id="recording-timer">00:00</div>
-            </div>
-            
-            <!-- 底部控制欄 -->
-            <div id="bottom-controls">
-                <!-- 查看照片按鈕 -->
-                <button id="gallery-btn">📷</button>
-                
-                <!-- 拍攝按鈕 -->
-                <button id="capture-btn"></button>
-                
-                <!-- 右側按鈕容器 -->
-                <div style="display: flex; gap: 10px;">
-                    <!-- 錄影設定按鈕 -->
-                    <button id="video-settings-btn">⚙️</button>
+            // Manual Controls
+            const [exposure, setExposure] = useState(0); // -2 to 2
+            const [iso, setIso] = useState(400); // Simulated
+            const [showControls, setShowControls] = useState(false);
+
+            // UX
+            const [isShutterPressed, setIsShutterPressed] = useState(false);
+            const [galleryPreview, setGalleryPreview] = useState(null);
+            const [orientation, setOrientation] = useState(0);
+
+            // --- Device Detection Logic ---
+            useEffect(() => {
+                const detectDevice = () => {
+                    const width = window.screen.width;
+                    const height = window.screen.height;
+                    const ratio = window.devicePixelRatio;
                     
-                    <!-- 切換鏡頭按鈕 -->
-                    <button id="flip-camera-btn">🔄</button>
-                </div>
-            </div>
-            
-            <!-- 解析度資訊 -->
-            <div id="resolution-info">4K • 60fps</div>
-        </div>
-    </div>
-    
-    <!-- 儲存確認對話框 -->
-    <div id="save-dialog">
-        <div id="save-dialog-content">
-            <h3>儲存媒體</h3>
-            <p>是否要將拍攝的內容儲存到相簿？</p>
-            <div id="save-dialog-buttons">
-                <button id="save-cancel" class="dialog-btn">取消</button>
-                <button id="save-confirm" class="dialog-btn">儲存</button>
-            </div>
-        </div>
-    </div>
-    
-    <!-- 相簿預覽 -->
-    <div id="gallery-preview">
-        <div id="gallery-header">
-            <button id="gallery-close">關閉</button>
-            <h3 id="gallery-title">相簿</h3>
-            <div></div> <!-- 佔位元素 -->
-        </div>
-        <div id="gallery-content">
-            <img id="gallery-image" src="" alt="預覽圖片">
-        </div>
-    </div>
-    
-    <!-- 狀態訊息 -->
-    <div id="status-message"></div>
-    
-    <script>
-        // 檢測是否為iOS 18+的iPhone設備
-        function isCompatibleDevice() {
-            const userAgent = navigator.userAgent;
-            const isiPhone = /iPhone/.test(userAgent) && !/iPad/.test(userAgent);
-            
-            // 檢測iOS版本 (簡化版本，實際應用中可能需要更精確的檢測)
-            const iosVersionMatch = userAgent.match(/OS (\d+)_/);
-            const iosVersion = iosVersionMatch ? parseInt(iosVersionMatch[1]) : 0;
-            
-            return isiPhone && iosVersion >= 18;
-        }
-        
-        // 顯示狀態訊息
-        function showStatusMessage(message, duration = 3000) {
-            const statusEl = document.getElementById('status-message');
-            statusEl.textContent = message;
-            statusEl.style.display = 'block';
-            
-            setTimeout(() => {
-                statusEl.style.display = 'none';
-            }, duration);
-        }
-        
-        // 初始化應用程式
-        function initApp() {
-            const deviceCheckEl = document.getElementById('device-check');
-            const cameraAppEl = document.getElementById('camera-app');
-            
-            if (isCompatibleDevice()) {
-                deviceCheckEl.style.display = 'none';
-                cameraAppEl.style.display = 'flex';
-                initCamera();
-            } else {
-                deviceCheckEl.style.display = 'flex';
-                cameraAppEl.style.display = 'none';
-            }
-        }
-        
-        // 相機相關變數
-        let stream = null;
-        let mediaRecorder = null;
-        let recordedChunks = [];
-        let isRecording = false;
-        let recordingTimer = null;
-        let recordingStartTime = null;
-        let currentMode = 'photo'; // 'photo' 或 'video'
-        let currentCamera = 'environment'; // 'user' 或 'environment'
-        let availableLenses = [];
-        let currentLens = 'wide';
-        
-        // 錄影參數
-        let videoSettings = {
-            resolution: 2, // 0: 1080p, 1: 2.7K, 2: 4K
-            fps: 2, // 0: 24, 1: 30, 2: 60
-            bitrate: 1 // 0: 低, 1: 中, 2: 高
-        };
-        
-        // 初始化相機
-        async function initCamera() {
-            try {
-                // 獲取可用鏡頭
-                await getAvailableCameras();
-                
-                // 設置預設鏡頭
-                await switchCamera('environment');
-                
-                // 設置事件監聽器
-                setupEventListeners();
-                
-                // 初始化錄影參數控制
-                initVideoControls();
-                
-                showStatusMessage('相機已就緒');
-            } catch (error) {
-                console.error('無法訪問相機:', error);
-                showStatusMessage('無法訪問相機，請檢查權限設定', 5000);
-            }
-        }
-        
-        // 獲取可用鏡頭
-        async function getAvailableCameras() {
-            try {
-                const devices = await navigator.mediaDevices.enumerateDevices();
-                const videoDevices = devices.filter(device => device.kind === 'videoinput');
-                
-                // 根據設備類型模擬不同鏡頭
-                // 實際應用中需要更精確的檢測
-                availableLenses = [];
-                
-                // 模擬iPhone多鏡頭系統
-                if (videoDevices.length > 0) {
-                    // 超廣角鏡頭 (如果可用)
-                    availableLenses.push({ id: 'ultrawide', label: '0.5x', facing: 'environment' });
-                    
-                    // 廣角鏡頭 (主鏡頭)
-                    availableLenses.push({ id: 'wide', label: '1x', facing: 'environment' });
-                    
-                    // 望遠鏡頭 (如果可用)
-                    availableLenses.push({ id: 'telephoto', label: '2x', facing: 'environment' });
-                    
-                    // 如果有更多鏡頭，添加更多選項
-                    if (videoDevices.length >= 3) {
-                        availableLenses.push({ id: 'telephoto2', label: '3x', facing: 'environment' });
+                    // Simple heuristic for iPhone models based on logical resolution
+                    let model = 'iPhone';
+                    let isPro = false;
+                    let isMax = false;
+
+                    // iPhone 12/13/14/15/16 Pro Max or Plus
+                    if (width >= 430) {
+                        model = 'iPhone Pro Max / Plus';
+                        isMax = true;
+                        isPro = true; // Assuming newer large phones are powerful
+                    } 
+                    // iPhone 12/13/14/15/16 Pro / Base
+                    else if (width >= 390) {
+                        model = 'iPhone Pro';
+                        isPro = true;
+                    } 
+                    // iPhone X/XS/11 Pro
+                    else if (width >= 375) {
+                        model = 'iPhone X/XS';
                     }
-                }
-                
-                // 生成鏡頭選擇按鈕
-                const lensSelector = document.getElementById('lens-selector');
-                lensSelector.innerHTML = '';
-                
-                availableLenses.forEach(lens => {
-                    const button = document.createElement('button');
-                    button.className = `lens-btn ${lens.id === currentLens ? 'active' : ''}`;
-                    button.textContent = lens.label;
-                    button.dataset.lensId = lens.id;
-                    button.addEventListener('click', () => switchLens(lens.id));
-                    lensSelector.appendChild(button);
-                });
-                
-            } catch (error) {
-                console.error('獲取鏡頭失敗:', error);
-            }
-        }
-        
-        // 切換鏡頭
-        async function switchLens(lensId) {
-            currentLens = lensId;
-            
-            // 更新按鈕狀態
-            document.querySelectorAll('.lens-btn').forEach(btn => {
-                btn.classList.toggle('active', btn.dataset.lensId === lensId);
-            });
-            
-            // 重新啟動相機以應用新的鏡頭設置
-            await restartCamera();
-            
-            // 根據鏡頭ID顯示對應的倍率名稱
-            let lensName = '廣角';
-            if (lensId === 'ultrawide') lensName = '超廣角';
-            else if (lensId === 'telephoto') lensName = '望遠';
-            else if (lensId === 'telephoto2') lensName = '超望遠';
-            
-            showStatusMessage(`已切換到${lensName}鏡頭`);
-        }
-        
-        // 切換前後鏡頭
-        async function switchCamera(facingMode) {
-            currentCamera = facingMode;
-            await restartCamera();
-            showStatusMessage(`已切換到${facingMode === 'environment' ? '後置' : '前置'}鏡頭`);
-        }
-        
-        // 重新啟動相機
-        async function restartCamera() {
-            if (stream) {
-                stream.getTracks().forEach(track => track.stop());
-            }
-            
-            try {
-                // 根據鏡頭類型設置不同的約束條件
-                let width = 3840, height = 2160; // 4K 默認
-                
-                // 根據鏡頭類型調整分辨率
-                if (currentLens === 'ultrawide') {
-                    width = 1920;
-                    height = 1080;
-                } else if (currentLens === 'telephoto') {
-                    width = 3840;
-                    height = 2160;
-                } else if (currentLens === 'telephoto2') {
-                    width = 4032;
-                    height = 3024;
-                }
-                
-                // 設置約束條件
-                const constraints = {
-                    video: {
-                        facingMode: currentCamera,
-                        width: { ideal: width },
-                        height: { ideal: height },
-                        frameRate: { ideal: 60 },
-                        // 添加更多約束以優化性能
-                        aspectRatio: { ideal: width/height }
-                    },
-                    audio: false // 禁用麥克風，避免雜音
+                    
+                    // User Agent Check for iOS version (Rough check)
+                    const ua = navigator.userAgent;
+                    const isIOS = /iPhone|iPad|iPod/.test(ua);
+                    
+                    setDeviceInfo({ model, isPro, isMax, isIOS });
                 };
+
+                detectDevice();
                 
-                // 請求相機權限
-                stream = await navigator.mediaDevices.getUserMedia(constraints);
-                
-                // 設置視頻預覽
-                const videoPreview = document.getElementById('video-preview');
-                videoPreview.srcObject = stream;
-                
-                // 防止前鏡頭鏡像
-                if (currentCamera === 'user') {
-                    videoPreview.style.transform = 'scaleX(1)';
-                } else {
-                    videoPreview.style.transform = 'scaleX(1)';
-                }
-                
-                // 等待視頻準備好
-                await new Promise(resolve => {
-                    videoPreview.onloadedmetadata = () => {
-                        resolve();
+                // Orientation listener
+                const handleOrientation = (event) => {
+                    if(event.beta) {
+                         // Simple tilt logic just for UI feedback
+                    }
+                };
+                window.addEventListener('deviceorientation', handleOrientation);
+                return () => window.removeEventListener('deviceorientation', handleOrientation);
+            }, []);
+
+            // --- Camera Initialization ---
+            useEffect(() => {
+                startCamera();
+                return () => {
+                    if (stream) {
+                        stream.getTracks().forEach(track => track.stop());
+                    }
+                };
+            }, [lens]); // Restart camera if lens "physically" changes (simulated)
+
+            const startCamera = async () => {
+                try {
+                    // Logic to request different cameras based on "lens" state
+                    const constraints = {
+                        video: {
+                            facingMode: 'environment',
+                            width: { ideal: 4096 }, // Try to get 4K
+                            height: { ideal: 2160 },
+                        },
+                        audio: false
                     };
-                });
-                
-            } catch (error) {
-                console.error('重新啟動相機失敗:', error);
-                showStatusMessage('相機啟動失敗', 5000);
-            }
-        }
-        
-        // 初始化錄影參數控制
-        function initVideoControls() {
-            const resolutionSlider = document.getElementById('resolution-slider');
-            const fpsSlider = document.getElementById('fps-slider');
-            const bitrateSlider = document.getElementById('bitrate-slider');
-            
-            resolutionSlider.addEventListener('input', updateVideoSettings);
-            fpsSlider.addEventListener('input', updateVideoSettings);
-            bitrateSlider.addEventListener('input', updateVideoSettings);
-            
-            updateVideoSettings();
-        }
-        
-        // 更新錄影參數
-        function updateVideoSettings() {
-            const resolutionSlider = document.getElementById('resolution-slider');
-            const fpsSlider = document.getElementById('fps-slider');
-            const bitrateSlider = document.getElementById('bitrate-slider');
-            
-            videoSettings.resolution = parseInt(resolutionSlider.value);
-            videoSettings.fps = parseInt(fpsSlider.value);
-            videoSettings.bitrate = parseInt(bitrateSlider.value);
-            
-            // 更新顯示值
-            document.getElementById('resolution-value').textContent = 
-                ['1080p', '2.7K', '4K'][videoSettings.resolution];
-            document.getElementById('fps-value').textContent = 
-                ['24 fps', '30 fps', '60 fps'][videoSettings.fps];
-            document.getElementById('bitrate-value').textContent = 
-                ['低', '中', '高'][videoSettings.bitrate];
-            
-            // 更新解析度資訊
-            document.getElementById('resolution-info').textContent = 
-                `${['1080p', '2.7K', '4K'][videoSettings.resolution]} • ${['24', '30', '60'][videoSettings.fps]}fps`;
-        }
-        
-        // 設置事件監聽器
-        function setupEventListeners() {
-            // 模式切換按鈕
-            document.getElementById('photo-mode').addEventListener('click', () => switchMode('photo'));
-            document.getElementById('video-mode').addEventListener('click', () => switchMode('video'));
-            
-            // 拍攝按鈕
-            document.getElementById('capture-btn').addEventListener('click', handleCapture);
-            
-            // 切換鏡頭按鈕
-            document.getElementById('flip-camera-btn').addEventListener('click', () => {
-                switchCamera(currentCamera === 'environment' ? 'user' : 'environment');
-            });
-            
-            // 查看照片按鈕
-            document.getElementById('gallery-btn').addEventListener('click', showGallery);
-            
-            // 錄影設定按鈕
-            document.getElementById('video-settings-btn').addEventListener('click', toggleVideoSettings);
-            
-            // 關閉設定面板按鈕
-            document.getElementById('close-settings').addEventListener('click', toggleVideoSettings);
-            
-            // 儲存對話框按鈕
-            document.getElementById('save-cancel').addEventListener('click', closeSaveDialog);
-            document.getElementById('save-confirm').addEventListener('click', confirmSave);
-            
-            // 相簿關閉按鈕
-            document.getElementById('gallery-close').addEventListener('click', closeGallery);
-        }
-        
-        // 切換模式
-        function switchMode(mode) {
-            currentMode = mode;
-            
-            // 更新按鈕狀態
-            document.getElementById('photo-mode').classList.toggle('active', mode === 'photo');
-            document.getElementById('video-mode').classList.toggle('active', mode === 'video');
-            
-            // 顯示/隱藏錄影設定按鈕
-            document.getElementById('video-settings-btn').style.display = mode === 'video' ? 'block' : 'none';
-            
-            // 隱藏設定面板
-            document.getElementById('video-controls-panel').style.display = 'none';
-            
-            // 更新解析度顯示
-            updateVideoSettings();
-            
-            // 如果正在錄影，停止錄影
-            if (mode === 'photo' && isRecording) {
-                stopRecording();
-            }
-            
-            showStatusMessage(`已切換到${mode === 'photo' ? '拍照' : '錄影'}模式`);
-        }
-        
-        // 切換錄影設定面板
-        function toggleVideoSettings() {
-            const panel = document.getElementById('video-controls-panel');
-            panel.style.display = panel.style.display === 'flex' ? 'none' : 'flex';
-        }
-        
-        // 處理拍攝
-        function handleCapture() {
-            if (currentMode === 'photo') {
-                takePhoto();
-            } else {
-                if (isRecording) {
-                    stopRecording();
-                } else {
-                    startRecording();
-                }
-            }
-        }
-        
-        // 拍照
-        function takePhoto() {
-            const videoPreview = document.getElementById('video-preview');
-            const canvas = document.createElement('canvas');
-            const context = canvas.getContext('2d');
-            
-            // 設置canvas尺寸與視頻相同
-            canvas.width = videoPreview.videoWidth;
-            canvas.height = videoPreview.videoHeight;
-            
-            // 防止前鏡頭鏡像
-            if (currentCamera === 'user') {
-                context.translate(canvas.width, 0);
-                context.scale(-1, 1);
-            }
-            
-            // 繪製當前視頻幀到canvas
-            context.drawImage(videoPreview, 0, 0, canvas.width, canvas.height);
-            
-            // 將canvas轉換為圖片數據URL
-            const imageDataURL = canvas.toDataURL('image/jpeg', 0.95); // 提高圖片質量
-            
-            // 顯示儲存對話框
-            showSaveDialog(imageDataURL, 'photo');
-            
-            showStatusMessage('照片已拍攝');
-        }
-        
-        // 開始錄影
-        function startRecording() {
-            if (!stream) return;
-            
-            try {
-                recordedChunks = [];
-                
-                // 創建MediaRecorder實例
-                const options = {
-                    mimeType: 'video/mp4; codecs="avc1.42E01E"',
-                    videoBitsPerSecond: [1000000, 3000000, 5000000][videoSettings.bitrate] // 根據設置調整比特率
-                };
-                
-                mediaRecorder = new MediaRecorder(stream, options);
-                
-                // 收集錄影數據
-                mediaRecorder.ondataavailable = (event) => {
-                    if (event.data.size > 0) {
-                        recordedChunks.push(event.data);
+
+                    const newStream = await navigator.mediaDevices.getUserMedia(constraints);
+                    setStream(newStream);
+                    setHasPermission(true);
+                    if (videoRef.current) {
+                        videoRef.current.srcObject = newStream;
                     }
-                };
+                } catch (err) {
+                    console.error("Camera Error:", err);
+                    // alert("Unable to access camera. Please allow permission in Safari settings.");
+                    // Fallback for demo if camera fails (e.g. desktop without camera)
+                }
+            };
+
+            // --- Capture Logic ---
+            const handleShutter = () => {
+                setIsShutterPressed(true);
                 
-                // 錄影結束時的處理
-                mediaRecorder.onstop = () => {
-                    const blob = new Blob(recordedChunks, { type: 'video/mp4' });
-                    const videoURL = URL.createObjectURL(blob);
+                // Simulate Capture delay
+                setTimeout(() => {
+                    setIsShutterPressed(false);
+                    captureImage();
+                }, 150);
+            };
+
+            const captureImage = () => {
+                if (!videoRef.current) return;
+                
+                const canvas = document.createElement('canvas');
+                const video = videoRef.current;
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                
+                const ctx = canvas.getContext('2d');
+                
+                // Apply "Apple Log" filter if active
+                if (format === 'LOG') {
+                    ctx.filter = 'contrast(0.85) saturate(0.7) brightness(1.1) sepia(0.1)';
+                }
+                // Apply "Exposure" simulation
+                if (exposure !== 0) {
+                     const bright = 100 + (exposure * 10);
+                     ctx.filter = (ctx.filter !== 'none' ? ctx.filter + ' ' : '') + `brightness(${bright}%)`;
+                }
+
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                
+                // Save to state
+                const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
+                setGalleryPreview(dataUrl);
+            };
+
+            // --- Lens Switching Logic (Simulation) ---
+            const switchLens = (newLens) => {
+                setLens(newLens);
+                // In a real Native app, this calls hardware. 
+                // In Web, we simulate zoom via CSS scale transform or track constraints
+                if (newLens === '0.5x') setZoom(0.5);
+                if (newLens === '1x') setZoom(1);
+                if (newLens === '2x') setZoom(2);
+                if (newLens === '5x') setZoom(5);
+            };
+
+            // --- Render Helper: Active Style ---
+            const activeStyle = (isActive) => 
+                isActive ? "text-cyan-400 drop-shadow-[0_0_8px_rgba(34,211,238,0.8)]" : "text-white/60";
+
+            if (!hasPermission) {
+                return (
+                    <div className="h-screen w-full bg-black flex flex-col items-center justify-center text-center p-6 space-y-6">
+                        <div className="w-20 h-20 rounded-full border-2 border-cyan-400 flex items-center justify-center animate-pulse">
+                            <Aperture className="w-10 h-10 text-cyan-400" />
+                        </div>
+                        <h1 className="text-2xl font-bold font-mono tracking-tighter">EPhoto</h1>
+                        <p className="text-gray-400 text-sm max-w-xs">
+                            EPhoto 需要相機權限以啟動 Liquid Glass 引擎。
+                            <br/>專為 iPhone XS 及後續機型設計。
+                        </p>
+                        <button 
+                            onClick={startCamera}
+                            className="px-8 py-3 bg-cyan-900/30 border border-cyan-400/50 rounded-full text-cyan-400 font-bold hover:bg-cyan-400/20 transition-all"
+                        >
+                            啟動相機
+                        </button>
+                    </div>
+                );
+            }
+
+            return (
+                <div className="relative h-[100dvh] w-full bg-black overflow-hidden select-none">
                     
-                    // 顯示儲存對話框
-                    showSaveDialog(videoURL, 'video');
-                };
-                
-                // 開始錄影
-                mediaRecorder.start(100); // 減少數據收集間隔以提高流暢度
-                isRecording = true;
-                
-                // 顯示錄影指示器
-                document.getElementById('recording-indicator').style.display = 'flex';
-                
-                // 開始計時器
-                recordingStartTime = Date.now();
-                updateRecordingTimer();
-                recordingTimer = setInterval(updateRecordingTimer, 1000);
-                
-                showStatusMessage('錄影已開始');
-            } catch (error) {
-                console.error('開始錄影失敗:', error);
-                showStatusMessage('開始錄影失敗', 5000);
-            }
-        }
-        
-        // 停止錄影
-        function stopRecording() {
-            if (mediaRecorder && isRecording) {
-                mediaRecorder.stop();
-                isRecording = false;
-                
-                // 隱藏錄影指示器
-                document.getElementById('recording-indicator').style.display = 'none';
-                
-                // 清除計時器
-                clearInterval(recordingTimer);
-                
-                showStatusMessage('錄影已停止');
-            }
-        }
-        
-        // 更新錄影計時器
-        function updateRecordingTimer() {
-            if (!recordingStartTime) return;
-            
-            const elapsedTime = Math.floor((Date.now() - recordingStartTime) / 1000);
-            const minutes = Math.floor(elapsedTime / 60).toString().padStart(2, '0');
-            const seconds = (elapsedTime % 60).toString().padStart(2, '0');
-            
-            document.getElementById('recording-timer').textContent = `${minutes}:${seconds}`;
-        }
-        
-        // 顯示相簿
-        function showGallery() {
-            // 這裡應該顯示實際的相簿內容
-            // 目前僅顯示示例圖片
-            document.getElementById('gallery-image').src = 'https://via.placeholder.com/800x600/333333/007AFF?text=相簿預覽';
-            document.getElementById('gallery-preview').style.display = 'flex';
-        }
-        
-        // 關閉相簿
-        function closeGallery() {
-            document.getElementById('gallery-preview').style.display = 'none';
-        }
-        
-        // 顯示儲存對話框
-        function showSaveDialog(mediaURL, mediaType) {
-            const saveDialog = document.getElementById('save-dialog');
-            saveDialog.style.display = 'flex';
-            
-            // 儲存媒體URL和類型供確認時使用
-            saveDialog.dataset.mediaUrl = mediaURL;
-            saveDialog.dataset.mediaType = mediaType;
-        }
-        
-        // 關閉儲存對話框
-        function closeSaveDialog() {
-            const saveDialog = document.getElementById('save-dialog');
-            saveDialog.style.display = 'none';
-            
-            // 清理URL對象
-            if (saveDialog.dataset.mediaType === 'video') {
-                URL.revokeObjectURL(saveDialog.dataset.mediaUrl);
-            }
-            
-            // 清除儲存的數據
-            delete saveDialog.dataset.mediaUrl;
-            delete saveDialog.dataset.mediaType;
-        }
-        
-        // 確認儲存
-        function confirmSave() {
-            const saveDialog = document.getElementById('save-dialog');
-            const mediaURL = saveDialog.dataset.mediaUrl;
-            const mediaType = saveDialog.dataset.mediaType;
-            
-            // 這裡應該實現實際的儲存邏輯
-            // 由於瀏覽器限制，無法直接存取相簿
-            // 實際應用中需要使用Cordova、Capacitor等框架
-            
-            if (mediaType === 'photo') {
-                // 模擬照片儲存
-                const link = document.createElement('a');
-                link.download = `photo_${Date.now()}.jpg`;
-                link.href = mediaURL;
-                link.click();
-                showStatusMessage('照片已儲存');
-            } else {
-                // 模擬影片儲存
-                const link = document.createElement('a');
-                link.download = `video_${Date.now()}.mp4`;
-                link.href = mediaURL;
-                link.click();
-                showStatusMessage('影片已儲存');
-            }
-            
-            closeSaveDialog();
-        }
-        
-        // 初始化應用
-        document.addEventListener('DOMContentLoaded', initApp);
+                    {/* Shutter Flash Animation */}
+                    {isShutterPressed && <div className="shutter-flash"></div>}
+
+                    {/* --- Viewfinder Layer --- */}
+                    <div className="absolute inset-0 z-0 flex items-center justify-center bg-black">
+                        <video 
+                            ref={videoRef}
+                            autoPlay 
+                            playsInline 
+                            muted
+                            className={`h-full w-full object-cover transition-all duration-500 ease-out 
+                                ${format === 'LOG' ? 'filter-apple-log' : ''}
+                            `}
+                            style={{ 
+                                transform: `scale(${Math.max(1, zoom)})`, // Digital zoom simulation for Web
+                                filter: `brightness(${1 + exposure/5})` // Exposure simulation
+                            }}
+                        />
+                        
+                        {/* Grid Lines */}
+                        {gridVisible && (
+                            <div className="absolute inset-0 pointer-events-none opacity-30">
+                                <div className="w-full h-full border-white/20 grid grid-cols-3 grid-rows-3">
+                                    <div className="border-r border-b border-white/20"></div>
+                                    <div className="border-r border-b border-white/20"></div>
+                                    <div className="border-b border-white/20"></div>
+                                    <div className="border-r border-b border-white/20"></div>
+                                    <div className="border-r border-b border-white/20"></div>
+                                    <div className="border-b border-white/20"></div>
+                                    <div className="border-r border-white/20"></div>
+                                    <div className="border-r border-white/20"></div>
+                                    <div></div>
+                                </div>
+                            </div>
+                        )}
+                        
+                        {/* Center Point */}
+                        <div className="absolute top-1/2 left-1/2 w-2 h-2 bg-yellow-400/50 rounded-full -translate-x-1/2 -translate-y-1/2 pointer-events-none border border-black/20"></div>
+                    </div>
+
+                    {/* --- UI Layer: Top Bar --- */}
+                    <div className="absolute top-0 left-0 right-0 pt-safe-top z-20">
+                        <div className="liquid-glass mx-4 mt-2 rounded-3xl p-3 flex justify-between items-center h-16 shadow-lg border-b border-white/5">
+                            {/* Flash */}
+                            <button onClick={() => setFlashMode(f => f === 'on' ? 'off' : 'on')} className="p-2 active:scale-95 transition-transform">
+                                <Zap className={`w-5 h-5 ${activeStyle(flashMode === 'on')}`} />
+                            </button>
+
+                            {/* Format Toggles (Dynamic based on iPhone Model) */}
+                            <div className="flex gap-2 text-[10px] font-mono font-bold">
+                                {deviceInfo.isPro && (
+                                    <>
+                                        <button 
+                                            onClick={() => setFormat(f => f === 'RAW' ? 'HEIF' : 'RAW')}
+                                            className={`px-2 py-1 rounded border transition-colors ${format === 'RAW' ? 'bg-cyan-500/20 border-cyan-400 text-cyan-400' : 'border-white/20 text-gray-400'}`}
+                                        >
+                                            RAW
+                                        </button>
+                                        <button 
+                                            onClick={() => setFormat(f => f === 'LOG' ? 'HEIF' : 'LOG')}
+                                            className={`px-2 py-1 rounded border transition-colors ${format === 'LOG' ? 'bg-amber-500/20 border-amber-400 text-amber-400' : 'border-white/20 text-gray-400'}`}
+                                        >
+                                            LOG
+                                        </button>
+                                    </>
+                                )}
+                                {!deviceInfo.isPro && (
+                                    <span className="px-2 py-1 border border-white/10 rounded text-gray-500">HEIF</span>
+                                )}
+                            </div>
+
+                            {/* Settings Toggle */}
+                            <button onClick={() => setShowControls(!showControls)} className="p-2 active:scale-95 transition-transform">
+                                <Sliders className={`w-5 h-5 ${activeStyle(showControls)}`} />
+                            </button>
+                        </div>
+
+                        {/* Dropdown Manual Controls */}
+                        {showControls && (
+                            <div className="mx-4 mt-2 p-4 liquid-glass rounded-2xl animate-in slide-in-from-top-4 fade-in duration-300 space-y-4">
+                                {/* Exposure */}
+                                <div className="space-y-1">
+                                    <div className="flex justify-between text-xs text-gray-400 font-mono">
+                                        <span className="flex items-center gap-1"><Sun size={12}/> 曝光補償</span>
+                                        <span>{exposure > 0 ? '+' : ''}{exposure} EV</span>
+                                    </div>
+                                    <input 
+                                        type="range" min="-2" max="2" step="0.1" 
+                                        value={exposure} 
+                                        onChange={(e) => setExposure(parseFloat(e.target.value))}
+                                        className="w-full"
+                                    />
+                                </div>
+                                {/* Grid Toggle */}
+                                <div className="flex items-center justify-between">
+                                    <span className="text-xs text-gray-400 font-mono flex items-center gap-1"><Grid size={12}/> 構圖網格</span>
+                                    <button 
+                                        onClick={() => setGridVisible(!gridVisible)}
+                                        className={`w-10 h-5 rounded-full relative transition-colors ${gridVisible ? 'bg-cyan-500' : 'bg-gray-700'}`}
+                                    >
+                                        <div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-all ${gridVisible ? 'left-6' : 'left-1'}`}></div>
+                                    </button>
+                                </div>
+                                {/* Device Info */}
+                                <div className="pt-2 border-t border-white/10 text-[10px] text-gray-600 font-mono flex justify-between">
+                                    <span>DETECTED: {deviceInfo.model}</span>
+                                    <span>iOS 26 GLASS ENGINE</span>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* --- UI Layer: Bottom Controls --- */}
+                    <div className="absolute bottom-0 left-0 right-0 pb-safe-bottom z-20">
+                        <div className="bg-gradient-to-t from-black via-black/90 to-transparent pt-12 pb-8 px-6">
+                            
+                            {/* Lens Selector */}
+                            <div className="flex justify-center items-center gap-6 mb-8">
+                                <button onClick={() => switchLens('0.5x')} className={`w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold transition-all border ${lens === '0.5x' ? 'bg-black/50 border-cyan-400 text-cyan-400 scale-110 shadow-[0_0_15px_rgba(34,211,238,0.3)]' : 'bg-black/30 border-transparent text-gray-400'}`}>.5</button>
+                                <button onClick={() => switchLens('1x')} className={`w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold transition-all border ${lens === '1x' ? 'bg-black/50 border-cyan-400 text-cyan-400 scale-110 shadow-[0_0_15px_rgba(34,211,238,0.3)]' : 'bg-black/30 border-transparent text-gray-400'}`}>1x</button>
+                                <button onClick={() => switchLens('2x')} className={`w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold transition-all border ${lens === '2x' ? 'bg-black/50 border-cyan-400 text-cyan-400 scale-110 shadow-[0_0_15px_rgba(34,211,238,0.3)]' : 'bg-black/30 border-transparent text-gray-400'}`}>2</button>
+                                {(deviceInfo.isPro || deviceInfo.isMax) && (
+                                    <button onClick={() => switchLens('5x')} className={`w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold transition-all border ${lens === '5x' ? 'bg-black/50 border-cyan-400 text-cyan-400 scale-110 shadow-[0_0_15px_rgba(34,211,238,0.3)]' : 'bg-black/30 border-transparent text-gray-400'}`}>5</button>
+                                )}
+                            </div>
+
+                            {/* Mode Selector */}
+                            <div className="flex justify-center gap-6 mb-6 text-sm font-bold tracking-widest uppercase overflow-x-auto no-scrollbar mask-gradient">
+                                <span className={`cursor-pointer transition-colors ${cameraMode === 'VIDEO' ? 'text-cyan-400' : 'text-gray-600'}`} onClick={() => setCameraMode('VIDEO')}>Video</span>
+                                <span className={`cursor-pointer transition-colors ${cameraMode === 'PHOTO' ? 'text-cyan-400 drop-shadow-[0_0_5px_rgba(34,211,238,0.8)]' : 'text-gray-600'}`} onClick={() => setCameraMode('PHOTO')}>Photo</span>
+                                <span className="text-gray-800 cursor-not-allowed">Portrait</span>
+                                <span className="text-gray-800 cursor-not-allowed">Pano</span>
+                            </div>
+
+                            {/* Main Footer Row */}
+                            <div className="flex items-center justify-between">
+                                {/* Gallery Preview */}
+                                <div className="w-14 h-14 rounded-lg overflow-hidden border border-white/20 bg-gray-900 relative">
+                                    {galleryPreview ? (
+                                        <img src={galleryPreview} className="w-full h-full object-cover" alt="Last capture" />
+                                    ) : (
+                                        <div className="w-full h-full flex items-center justify-center text-gray-700">
+                                            <ImageIcon size={20} />
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Shutter Button */}
+                                <button 
+                                    onClick={handleShutter}
+                                    className={`
+                                        w-20 h-20 rounded-full border-4 flex items-center justify-center transition-all duration-100
+                                        ${cameraMode === 'VIDEO' ? 'border-red-500' : 'border-white'}
+                                        ${isShutterPressed ? 'scale-90 opacity-80' : 'scale-100'}
+                                    `}
+                                >
+                                    <div className={`
+                                        rounded-full transition-all duration-300
+                                        ${cameraMode === 'VIDEO' ? 'bg-red-500 w-16 h-16 hover:bg-red-600' : 'bg-white w-18 h-18 hover:bg-gray-200'}
+                                    `}></div>
+                                </button>
+
+                                {/* Switch Camera */}
+                                <div className="w-14 h-14 flex items-center justify-center rounded-full bg-white/10 backdrop-blur-md active:bg-white/20 transition-all">
+                                    <RotateCcw className="text-white w-6 h-6" />
+                                
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {/* iOS Safe Area Spacers (Visual logic only as CSS env() handles this) */}
+                    <style>{`
+                        .pb-safe-bottom { padding-bottom: env(safe-area-inset-bottom, 20px); }
+                        .pt-safe-top { padding-top: env(safe-area-inset-top, 40px); }
+                    `}</style>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
     </script>
 </body>
 </html>
